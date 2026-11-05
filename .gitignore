@@ -1,0 +1,6 @@
+bin/
+obj/
+out/
+*.pptx
+!scripts/*.pptx
+__pycache__/
