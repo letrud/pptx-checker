@@ -17,8 +17,8 @@ Run these after every build of an Office file, before sending it:
    ```bash
    python3 <skill-dir>/scripts/fix_known.py deck.pptx
    ```
-   Repairs duplicate shape IDs, `<a:pPr>` placed after a run, `notesMasterIdLst` out of order and lower-case section GUIDs — both produced by
-   pptxgenjs and both trigger PowerPoint's repair prompt.
+   Repairs duplicate shape IDs, `<a:pPr>` placed after a run, `notesMasterIdLst` out of order and lower-case section GUIDs — all produced by
+   pptxgenjs and all trigger PowerPoint's repair prompt.
 
 2. **Validate**:
    ```bash
