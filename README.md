@@ -30,6 +30,18 @@ Each is self-contained: the .NET runtime and the Open XML SDK are inside. No ins
 dotnet publish src/OoxmlValidate.csproj -c Release -r linux-x64 -o out
 ```
 
+## Enable the build
+
+The workflow is kept at `ci/build.yml`. Move it into place once (needs a token with the
+`workflow` permission, e.g. your own account):
+
+```bash
+git mv ci/build.yml .github/workflows/build.yml && git commit -m "Enable CI" && git push
+```
+
+Or in the GitHub web UI: **Add file → Create new file**, name it `.github/workflows/build.yml`,
+and paste the contents of `ci/build.yml`.
+
 ## Release
 
 Push a tag `v*` (for example `v0.1.0`). The `build` workflow publishes all four binaries and

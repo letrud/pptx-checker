@@ -1,0 +1,73 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - rid: linux-x64
+            os: ubuntu-latest
+          - rid: linux-arm64
+            os: ubuntu-latest
+          - rid: win-x64
+            os: windows-latest
+          - rid: osx-arm64
+            os: macos-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Publish self-contained single file
+        run: dotnet publish src/OoxmlValidate.csproj -c Release -r ${{ matrix.rid }} -o out/${{ matrix.rid }}
+
+      - name: Smoke test (native runner only)
+        if: matrix.rid == 'linux-x64'
+        run: |
+          python3 -m pip install --quiet python-pptx
+          python3 scripts/make_sample.py sample.pptx
+          out/linux-x64/ooxml-validate sample.pptx
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ooxml-validate-${{ matrix.rid }}
+          path: out/${{ matrix.rid }}/ooxml-validate*
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Package and release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir dist
+          for d in artifacts/ooxml-validate-*; do
+            rid="${d#artifacts/ooxml-validate-}"
+            for f in "$d"/*; do
+              ext=""; [[ "$f" == *.exe ]] && ext=".exe"
+              cp "$f" "dist/ooxml-validate-${rid}${ext}"
+            done
+          done
+          chmod +x dist/* || true
+          (cd dist && sha256sum * > SHA256SUMS)
+          gh release create "${GITHUB_REF_NAME}" dist/* --title "${GITHUB_REF_NAME}" --generate-notes
