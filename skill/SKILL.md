@@ -17,7 +17,7 @@ Run these after every build of an Office file, before sending it:
    ```bash
    python3 <skill-dir>/scripts/fix_known.py deck.pptx
    ```
-   Repairs duplicate shape IDs and `<a:pPr>` placed after a run — both produced by
+   Repairs duplicate shape IDs, `<a:pPr>` placed after a run, `notesMasterIdLst` out of order and lower-case section GUIDs — both produced by
    pptxgenjs and both trigger PowerPoint's repair prompt.
 
 2. **Validate**:
@@ -39,6 +39,8 @@ Run these after every build of an Office file, before sending it:
 |---|---|---|
 | `The element has unexpected child element 'pPr'` | rich-text run array mixing styled runs | `fix_known.py`, or give every run explicit options |
 | duplicate `id` / "id attribute" | shape ID clash with slide-number placeholder | `fix_known.py` |
+| `unexpected child element 'notesMasterIdLst'` in presentation.xml | pptxgenjs writes it after `sldIdLst` | `fix_known.py` |
+| `section` `id` ... Pattern constraint failed | pptxgenjs writes lower-case GUIDs for `sectionTitle` | `fix_known.py` |
 | `attribute 'val' has invalid value` on a colour | `#` or 8-digit hex colour | 6-digit hex without `#` |
 | errors in `chart*.xml` | pptxgenjs combo/axis options | see the pptx skill's chart notes |
 
